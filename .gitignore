@@ -1,9 +1,6 @@
 #  Local .terraform directories
 **/.terraform/*
 
-# Local terraform files
-.terraform.lock.hcl
-
 # .tfstate files
 *.tfstate
 *.tfstate.*
@@ -19,3 +16,7 @@ plan.out
 .iml
 
 .DS_Store
+
+builds/
+**/build/*
+**/node_modules/*

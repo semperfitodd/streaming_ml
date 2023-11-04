@@ -13,12 +13,15 @@ module "lambda_function_producer" {
   timeout       = 30
 
   environment_variables = {
-    "DYNAMO_TABLE" = module.dynamo.dynamodb_table_id
+    DYNAMO_TABLE    = module.dynamo.dynamodb_table_id
+    KINESIS_STREAM_NAME = aws_kinesis_stream.this.name
+    SEARCH_KEYWORDS = var.search_keywords
   }
 
   source_path = [
     {
-      path = "${path.module}/producer"
+      path             = "${path.module}/producer"
+      pip_requirements = true
     }
   ]
 
@@ -28,9 +31,9 @@ module "lambda_function_producer" {
   attach_policy_statements = true
   policy_statements = {
     dynamo = {
-      effect  = "Allow",
-      actions = ["dynamodb:*"],
-      resources = [ module.dynamo.dynamodb_table_arn ]
+      effect    = "Allow",
+      actions   = ["dynamodb:*"],
+      resources = [module.dynamo.dynamodb_table_arn]
     },
   }
 
