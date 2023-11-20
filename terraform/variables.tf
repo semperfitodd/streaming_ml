@@ -15,7 +15,7 @@ variable "owner" {
 
 variable "search_keywords" {
   description = "Keywords to search for from twitter"
-  default     = "pga,golf,titleist"
+  default     = "green energy, alternative fuels"
 }
 
 variable "tags" {

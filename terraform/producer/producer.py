@@ -1,46 +1,47 @@
-import json
-import tweepy
 import boto3
+import tweepy
+import json
 import os
 
+def get_secret(secret_name):
+    # Create a Secrets Manager client
+    client = boto3.client(service_name='secretsmanager')
+
+    try:
+        get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+    except Exception as e:
+        raise e
+
+    if 'SecretString' in get_secret_value_response:
+        secret = get_secret_value_response['SecretString']
+        return json.loads(secret)
+    else:
+        raise Exception("Secret not found or not in string format.")
+
+def search_tweets_v2(client, query, max_results):
+    try:
+        response = client.search_recent_tweets(query=query, max_results=max_results, tweet_fields=["created_at", "author_id"])
+        tweets = []
+        if response.data:
+            for tweet in response.data:
+                tweets.append(tweet.text)
+        return tweets
+    except tweepy.TweepyException as e:
+        error_message = f"Error during search: {e}"
+        if hasattr(e, 'response'):
+            error_message += f"\nResponse status code: {e.response.status_code}\nResponse text: {e.response.text}"
+        raise Exception(error_message)
+
 def lambda_handler(event, context):
-    # Authenticate with the Twitter API using the execution role's permissions
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth)
+    secret_name = os.environ.get('SECRET_NAME')
+    search_query = os.environ.get('SEARCH_QUERY')
+    credentials = get_secret(secret_name)
 
-    # Initialize the Kinesis client
-    kinesis_client = boto3.client('kinesis', region_name='us-east-2')
-    kinesis_stream_name = os.environ['KINESIS_STREAM_NAME']
+    bearer_token = credentials['bearer_token']
+    client = tweepy.Client(bearer_token=bearer_token)
 
-    # Get search keywords from the environment variable
-    search_keywords = os.environ['SEARCH_KEYWORDS'].split(',')
-
-    # Initialize the tweet counter
-    tweet_count = 0
-
-    # Search for recent tweets for each keyword
-    for keyword in search_keywords:
-        tweets = api.search(q=keyword.strip(), lang='en', count=10)
-
-        # Send each tweet to the Kinesis stream
-        for tweet in tweets:
-            try:
-                # Create a record for the Kinesis stream
-                kinesis_record = {
-                    'Data': json.dumps(tweet._json),
-                    'PartitionKey': tweet.id_str
-                }
-                # Put the record into the Kinesis stream
-                response = kinesis_client.put_record(StreamName=kinesis_stream_name, Data=json.dumps(kinesis_record),
-                                                     PartitionKey='partitionkey')
-                # Increment tweet counter
-                tweet_count += 1
-            except Exception as e:
-                print(f"Failed to send tweet with id {tweet.id_str} to Kinesis. Error: {e}")
-
-    # Return the total number of tweets processed
+    tweets = search_tweets_v2(client, search_query, 10)
     return {
         'statusCode': 200,
-        'body': f"{tweet_count} tweets processed."
+        'body': json.dumps(tweets)
     }
