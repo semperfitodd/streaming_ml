@@ -16,7 +16,7 @@ module "lambda_function_producer" {
     DYNAMO_TABLE        = module.dynamo.dynamodb_table_id
     KINESIS_STREAM_NAME = aws_kinesis_stream.this.name
     SEARCH_KEYWORDS     = var.search_keywords
-    SECRET_NAME = aws_secretsmanager_secret.this.name
+    SECRET_NAME         = aws_secretsmanager_secret.this.name
   }
 
   source_path = [

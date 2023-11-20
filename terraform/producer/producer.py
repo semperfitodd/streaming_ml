@@ -34,7 +34,7 @@ def search_tweets_v2(client, query, max_results):
 
 def lambda_handler(event, context):
     secret_name = os.environ.get('SECRET_NAME')
-    search_query = os.environ.get('SEARCH_QUERY')
+    search_query = os.environ.get('SEARCH_KEYWORDS')
     credentials = get_secret(secret_name)
 
     bearer_token = credentials['bearer_token']
