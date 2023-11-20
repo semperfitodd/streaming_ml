@@ -3,6 +3,7 @@ import tweepy
 import json
 import os
 
+
 def get_secret(secret_name):
     # Create a Secrets Manager client
     client = boto3.client(service_name='secretsmanager')
@@ -18,6 +19,7 @@ def get_secret(secret_name):
     else:
         raise Exception("Secret not found or not in string format.")
 
+
 def search_tweets_v2(client, query, max_results):
     try:
         response = client.search_recent_tweets(query=query, max_results=max_results, tweet_fields=["created_at", "author_id"])
@@ -31,6 +33,7 @@ def search_tweets_v2(client, query, max_results):
         if hasattr(e, 'response'):
             error_message += f"\nResponse status code: {e.response.status_code}\nResponse text: {e.response.text}"
         raise Exception(error_message)
+
 
 def lambda_handler(event, context):
     secret_name = os.environ.get('SECRET_NAME')
