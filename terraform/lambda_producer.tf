@@ -13,10 +13,9 @@ module "lambda_function_producer" {
   timeout       = 30
 
   environment_variables = {
-    DYNAMO_TABLE        = module.dynamo.dynamodb_table_id
-    KINESIS_STREAM_NAME = aws_kinesis_stream.this.name
-    SEARCH_KEYWORDS     = var.search_keywords
-    SECRET_NAME         = aws_secretsmanager_secret.this.name
+    DYNAMO_TABLE    = module.dynamo.dynamodb_table_id
+    SEARCH_KEYWORDS = var.search_keywords
+    SECRET_NAME     = aws_secretsmanager_secret.this.name
   }
 
   source_path = [

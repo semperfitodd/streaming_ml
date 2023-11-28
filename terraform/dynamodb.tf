@@ -6,7 +6,8 @@ module "dynamo" {
   server_side_encryption_enabled = false
   deletion_protection_enabled    = true
 
-  hash_key    = "tweet_id"
+  hash_key    = "topic"
+  range_key   = "created_at"
   table_class = "STANDARD"
 
   ttl_enabled        = true
@@ -14,9 +15,14 @@ module "dynamo" {
 
   attributes = [
     {
-      name = "tweet_id"
+      name = "topic"
       type = "S"
-  }]
+    },
+    {
+      name = "created_at"
+      type = "S"
+    }
+  ]
 
   tags = var.tags
 }
