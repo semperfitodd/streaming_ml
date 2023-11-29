@@ -1,3 +1,4 @@
+from itertools import tee
 import boto3
 import tweepy
 import json
@@ -6,7 +7,7 @@ from datetime import datetime, timedelta
 import logging
 
 logger = logging.getLogger()
-logger.setLevel((logging.DEBUG))
+logger.setLevel((logging.INFO))
 
 def get_secret(secret_name):
     # Create a Secrets Manager client
@@ -83,7 +84,9 @@ def write_tweets_to_dynamo(tweets, query):
             'author_name': tweet['author_name'],
             'likes': tweet['likes'],
             'retweets': tweet['retweets'],
-            'replies': tweet['replies']
+            'replies': tweet['replies'],
+            'sentiment': tweet['sentiment'],
+            'sentimentScore': tweet['sentimentScore']
         }
         
         try:
@@ -94,13 +97,8 @@ def write_tweets_to_dynamo(tweets, query):
                 'statusCode': 500,
                 'body': json.dumps(f"Error writing to DynamoDB: {str(e)}")
             }
-
-def lambda_handler(event, context):
-    logger.info(f"Recieved event: {event}")
-
-    secret_name = os.environ.get('SECRET_NAME')
-    credentials = get_secret(secret_name)
-    
+        
+def get_search_query(event):
     try: 
         body = json.loads(event.get('body', '{}'))
     except json.JSONDecodeError:
@@ -109,7 +107,7 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': json.dumps("Invalid JSON in request body")
         }
-    
+        
     search_query = body.get('search_query')
 
     if not search_query:
@@ -118,14 +116,41 @@ def lambda_handler(event, context):
             'body': json.dumps("No search query provided")
         }
 
+    return search_query
+
+def comprehend_tweets(tweets):
+    comprehend = boto3.client('comprehend')
+
+    for tweet in tweets:
+        text = tweet['text']
+
+        try:
+            sentiment_response = comprehend.detect_sentiment(Text=text, LanguageCode='en')
+            tweet['sentiment'] = sentiment_response['Sentiment']
+            tweet['sentimentScore'] = sentiment_response['SentimentScore']
+        except Exception as e:
+            logger.error(f"Error in sentiment analysis: {str(e)}")
+    return tweets
+
+def lambda_handler(event, context):
+    logger.info(f"Recieved event: {event}")
+
+    secret_name = os.environ.get('SECRET_NAME')
+    credentials = get_secret(secret_name)
+    search_query = get_search_query(event)    
+
     bearer_token = credentials['bearer_token']
     client = tweepy.Client(bearer_token=bearer_token)
 
     tweets = search_tweets_v2(client, search_query, 10)
+    logger.info(f"Tweets: {tweets}")
     
-    write_tweets_to_dynamo(tweets, search_query)
+    comprehended_tweets = comprehend_tweets(tweets)
+    logger.info(f"Comprehended Tweets: {comprehended_tweets}")
+
+    write_tweets_to_dynamo(comprehended_tweets, search_query)
 
     return {
         'statusCode': 200,
-        'body': json.dumps(tweets)
+        'body': json.dumps(comprehended_tweets)
     }

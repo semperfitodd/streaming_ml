@@ -42,6 +42,13 @@ module "lambda_function_producer" {
         "secretsmanager:ListSecretVersionIds",
       ],
       resources = [aws_secretsmanager_secret.this.arn]
+    },
+    comprehend = {
+      effect = "Allow",
+      actions = [
+        "comprehend:DetectSentiment"
+      ],
+      resources = ["*"]
     }
   }
 
