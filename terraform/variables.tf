@@ -13,11 +13,6 @@ variable "owner" {
   default     = "Jake and Todd"
 }
 
-variable "search_keywords" {
-  description = "Keywords to search for from twitter"
-  default     = "green energy, alternative fuels"
-}
-
 variable "tags" {
   description = "Default tags for this environment"
   default     = {}

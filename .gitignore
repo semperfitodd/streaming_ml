@@ -20,3 +20,5 @@ plan.out
 builds/
 **/build/*
 **/node_modules/*
+
+tfplan

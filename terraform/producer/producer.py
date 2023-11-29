@@ -3,7 +3,10 @@ import tweepy
 import json
 import os
 from datetime import datetime, timedelta
-import time
+import logging
+
+logger = logging.getLogger()
+logger.setLevel((logging.DEBUG))
 
 def get_secret(secret_name):
     # Create a Secrets Manager client
@@ -93,9 +96,27 @@ def write_tweets_to_dynamo(tweets, query):
             }
 
 def lambda_handler(event, context):
+    logger.info(f"Recieved event: {event}")
+
     secret_name = os.environ.get('SECRET_NAME')
-    search_query = os.environ.get('SEARCH_KEYWORDS')
     credentials = get_secret(secret_name)
+    
+    try: 
+        body = json.loads(event.get('body', '{}'))
+    except json.JSONDecodeError:
+        logger.error(("Error parsing JSON from event body"))
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Invalid JSON in request body")
+        }
+    
+    search_query = body.get('search_query')
+
+    if not search_query:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("No search query provided")
+        }
 
     bearer_token = credentials['bearer_token']
     client = tweepy.Client(bearer_token=bearer_token)
@@ -106,5 +127,5 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps("Tweets successfully processeed!")
+        'body': json.dumps(tweets)
     }
