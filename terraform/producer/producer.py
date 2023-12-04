@@ -5,6 +5,7 @@ import json
 import os
 from datetime import datetime, timedelta
 import logging
+from decimal import Decimal
 
 logger = logging.getLogger()
 logger.setLevel((logging.INFO))
@@ -70,8 +71,10 @@ def write_tweets_to_dynamo(tweets, query):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(os.environ.get('DYNAMO_TABLE'))
     
+    logger.info(f'WRITE TO DYNAMO: {tweets}')
     ttl = int((datetime.now() + timedelta(days=7)).timestamp())
 
+    # "sentiment": "NEUTRAL", "sentimentScore": {"Positive": 0.3553813397884369, "Negative": 0.0012201708741486073, "Neutral": 0.6433397531509399, "Mixed": 5.874782436876558e-05}
     for tweet in tweets:
         item = {
             'topic': tweet['topic'],
@@ -86,7 +89,12 @@ def write_tweets_to_dynamo(tweets, query):
             'retweets': tweet['retweets'],
             'replies': tweet['replies'],
             'sentiment': tweet['sentiment'],
-            'sentimentScore': tweet['sentimentScore']
+            'sentimentScore': {
+                'positive': Decimal(tweet['sentimentScore']['Positive']),
+                'negative': Decimal(tweet['sentimentScore']['Negative']),
+                'neutral': Decimal(tweet['sentimentScore']['Neutral']),
+                'mixed': Decimal(tweet['sentimentScore']['Mixed'])
+            }
         }
         
         try:
