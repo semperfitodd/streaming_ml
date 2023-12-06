@@ -1,0 +1,11 @@
+.btn-info {
+    background-color: rgb(21, 99, 147);
+    border-color: rgb(21, 99, 147);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: rgb(70, 114, 75);
+    border-color: rgb(70, 114, 75);
+    color: white;
+}
