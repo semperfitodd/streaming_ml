@@ -1,3 +1,9 @@
+.btn-info:active {
+    background-color: white;
+    border-color: white;
+    color: black;
+}
+
 .btn-info {
     background-color: rgb(21, 99, 147);
     border-color: rgb(21, 99, 147);
