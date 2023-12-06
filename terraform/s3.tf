@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "site" {
 }
 
 locals {
-  site_directory = "${path.module}/site/twitter-insights/"
+  site_directory = "${path.module}/site/twitter-insights/build"
 
   mime_types = {
     "css"  = "text/css"
