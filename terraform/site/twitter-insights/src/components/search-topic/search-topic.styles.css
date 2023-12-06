@@ -1,17 +1,39 @@
-.btn-info:active {
+/* .btn-info:active {
     background-color: white;
     border-color: white;
     color: black;
 }
 
-.btn-info {
+.btn-info:hover {
     background-color: rgb(21, 99, 147);
     border-color: rgb(21, 99, 147);
     color: white;
 }
 
-.btn-info:hover {
+.btn-info {
     background-color: rgb(70, 114, 75);
     border-color: rgb(70, 114, 75);
     color: white;
+} */
+
+.response-output {
+    background-color: #f8f9fa;
+    /* light gray background */
+    border: 1px solid #dee2e6;
+    /* light border */
+    border-radius: 5px;
+    /* rounded corners */
+    padding: 10px;
+    /* some padding */
+    margin-top: 10px;
+    /* space above the box */
+    white-space: pre-wrap;
+    /* wrap text */
+    word-break: break-word;
+    /* break long words */
+}
+
+.btn-equal-width {
+    width: 100px;
+    /* Adjust as needed */
 }
